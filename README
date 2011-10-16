@@ -1,0 +1,16 @@
+Lige nu understøtter spillet at man som X kan gå rundt ved at trykke
+N, S, Ø eller V, og når man går ind i Y, forsøger den at skifte bane
+til nummeret højere.
+
+Udvidelsesmuligheder:
+ * Man kunne samle objekter før man må gå videre, måske endda i den
+   rigtige rækkefølge (1 -> 2 -> ... -> Y).
+ * Man kunne samle objekter som havner i ens rygsæk.
+ * Y'et bevæger sig rundt tilfældigt (men lovligt).
+ * Synlighedsradius: Man kan ikke se uendeligt langt, og man kan ikke
+   se rundt om hjørner.
+ * Y'et (og andre bogstaver) kunne have dialoger som skulle gemmes i
+   filen sammen med banen. Dialogerne kunne have multiple-choice svar.
+ * Spillet kunne tælle ned i stedet for op så man før eller siden "dør".
+ * Man kunne udvide med instruktioner der kan ødelægge banen.
+ * 2D-minecraft!!
