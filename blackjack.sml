@@ -1,4 +1,13 @@
 
+(* Udvidelser:
+ *  - Gør det muligt at spille mod huset
+ *  - Gør det muligt at være flere spillere med samme spil kort
+ *  - Gør det muligt at splitte spillet hvis man får to ens
+ *  - Gør det muligt at genstarte spillet inde i og efter spillet
+ *  - Gør det muligt at vise hvilke hænder man faktisk havde (spiller, huset)
+ *  - Gør det muligt at skelne mellem klør dame og spar dame (osv.)
+ *)
+
 datatype card =
          Ace | Two | Three | Four | Five
          | Six | Seven | Eight | Nine | Ten
@@ -139,12 +148,3 @@ fun game () =
     in
       loop ([], shuffle allcards)
     end
-
-(* Udvidelser:
- *  - Gør det muligt at spille mod huset
- *  - Gør det muligt at være flere spillere med samme spil kort
- *  - Gør det muligt at splitte spillet hvis man får to ens
- *  - Gør det muligt at genstarte spillet inde i og efter spillet
- *  - Gør det muligt at vise hvilke hænder man faktisk havde (spiller, huset)
- *  - Gør det muligt at skelne mellem klør dame og spar dame (osv.)
- *)
