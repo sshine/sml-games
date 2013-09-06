@@ -1,4 +1,4 @@
-sml-adventure
+sml-games
 =============
 
 This repository contains games written in Standard ML.
