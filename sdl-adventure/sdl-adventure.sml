@@ -3,6 +3,7 @@
  *  - Collision detection
  *  - Handle larger maps than 32x24 tiles by scrolling the map
  *  - Display field of view based on actual system clock time
+ *  - Event rate limiting (avoid duplicate events after each other)
  *)
 
 (* Why does ML not have this already? *)
