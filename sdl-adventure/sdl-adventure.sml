@@ -147,11 +147,15 @@ fun process gameState gameMap =
 and handleKey (state, symb, modifiers) gameState gameMap =
     if state <> E.KeyPressed then gameState else
     case symb of
-        E.KeyQ => (quit (); gameState)
-      | E.KeyW => move (0,~1) gameState gameMap
-      | E.KeyA => move (~1,0) gameState gameMap
-      | E.KeyS => move (0,1) gameState gameMap
-      | E.KeyD => move (1,0) gameState gameMap
+        E.KeyQ  => (quit (); gameState)
+      | E.KeyW  => move (0,~1) gameState gameMap
+      | E.KeyUp => move (0,~1) gameState gameMap
+      | E.KeyA    => move (~1,0) gameState gameMap
+      | E.KeyLeft => move (~1,0) gameState gameMap
+      | E.KeyS    => move (0,1) gameState gameMap
+      | E.KeyDown => move (0,1) gameState gameMap
+      | E.KeyD     => move (1,0) gameState gameMap
+      | E.KeyRight => move (0,1) gameState gameMap
       | _ => gameState
 
 (* The game loop *)
