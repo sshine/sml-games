@@ -23,7 +23,7 @@ val rng = Random.newgen ()
 
 (* Game logic *)
 
-datatype drawable = Grass | Rock | Water | Tree | Door
+datatype drawable = Grass | Rock | Water | Tree | Door | X
 
 type PlayerPos = int * int
 
@@ -34,15 +34,15 @@ fun getPlayerPos (GameState pp) = pp
 fun getMapPos (0, 0) ((x::_)::_)  = x
   | getMapPos (x, 0) ((_::xs)::_) = getMapPos (x-1, 0) [xs]
   | getMapPos (x, y) (_::ys)      = getMapPos (x, y-1) ys
-  | getMapPos _      _            = Grass
+  | getMapPos _      _            = Water
 
 fun addp (x1,y1) (x2,y2) = (x1+x2,y1+y2)
 
-fun move p1 (GameState p2) gameMap =
-    let val p' = addp p1 p2 in
+fun move p1 (GameState old_p) gameMap =
+    let val p' = addp p1 old_p in
       case getMapPos p' gameMap of
           Grass => GameState p'
-        | _     => GameState p2
+        | _     => GameState old_p
     end
 
 fun distance (x1,y1) (x2,y2) =
@@ -54,6 +54,7 @@ val element =
      | #"~" => Water
      | #"T" => Tree
      | #"D" => Door
+     | #"x" => X
      |   _  => Water  (* we're on islands! *)
 
 fun withFile f fname =
@@ -79,7 +80,7 @@ structure D = M.Draw
 structure I = M.Image
 (*structure C = M.Colors*)
 
-val displayWidth = 640
+val displayWidth = 960
 val displayHeight = 480
 val squareSize = 20
 val tilesX = displayWidth div squareSize
@@ -116,8 +117,9 @@ fun drawsymb (i, j) symb =
         Grass => drawbox (i,j) M.Green
       | Rock  => drawbox (i,j) M.DarkGray
       | Water => drawbox (i,j) M.Blue
-      | Tree  => drawbox (i,j) (M.RGB (0, 140, 0))
+      | Tree  => (drawbox (i,j) M.Green; drawcircle (i,j) (M.RGB (0, 140, 0)))
       | Door  => drawbox (i,j) (M.RGB (128, 64, 0))
+      | X     => drawcircle (i, j) M.Red
 
 fun sameScreen (i,j) (x,y) =
     i div tilesX = x div tilesX andalso
@@ -147,15 +149,18 @@ fun process gameState gameMap =
 and handleKey (state, symb, modifiers) gameState gameMap =
     if state <> E.KeyPressed then gameState else
     case symb of
-        E.KeyQ  => (quit (); gameState)
-      | E.KeyW  => move (0,~1) gameState gameMap
-      | E.KeyUp => move (0,~1) gameState gameMap
-      | E.KeyA    => move (~1,0) gameState gameMap
-      | E.KeyLeft => move (~1,0) gameState gameMap
-      | E.KeyS    => move (0,1) gameState gameMap
-      | E.KeyDown => move (0,1) gameState gameMap
+        E.KeyQ     => (quit (); gameState)
+      | E.KeyW     => move (0,~1) gameState gameMap
+      | E.KeyUp    => move (0,~1) gameState gameMap
+      | E.KeyA     => move (~1,0) gameState gameMap
+      | E.KeyLeft  => move (~1,0) gameState gameMap
+      | E.KeyS     => move (0,1) gameState gameMap
+      | E.KeyDown  => move (0,1) gameState gameMap
       | E.KeyD     => move (1,0) gameState gameMap
-      | E.KeyRight => move (0,1) gameState gameMap
+      | E.KeyRight => move (1,0) gameState gameMap
+      | E.KeySpace => let val (rx, ry) = (Random.range(0, 10) rng - 5,
+                                          Random.range(0, 10) rng - 5)
+                      in move (rx, ry) gameState gameMap end
       | _ => gameState
 
 (* The game loop *)
@@ -166,7 +171,7 @@ fun loop gameState gameMap =
 
 fun run _ =
     let val jungle = getMap "jungle.txt"
-    in loop (GameState (6,6)) jungle
+    in loop (GameState (10,10)) jungle
     end
 
 val _ = run ()
