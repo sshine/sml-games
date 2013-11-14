@@ -1,3 +1,8 @@
+;load "MosGame"; (* Until we use Moscow ML structure-mode *)
+
+infixr $
+fun f $ x = f x
+
 (****************************************************************************)
 (****************************************************************************)
 (****************************************************************************)
@@ -21,8 +26,8 @@ struct
                               , ship      : Ship
                               , interests : Stuff list }
 
-       and GameState = GameState { player  : Ship * coordinate
-                                 , pirates : (Pirate * coordinate) list }
+       and GameState = GameState of { player  : Ship * coordinate
+                                    , pirates : (Pirate * coordinate) list }
 
   (* Initial game: 15 men, a cannon and 5 barrels of coffee. *)
   val coffee = Stuff { name = "coffee", worth = (10,30) }
@@ -33,12 +38,15 @@ struct
                 , cargo   = [(5, coffee)] }
 
   (* And the only other pirate is John, who incidentally wants to buy coffee *)
-  val him = Pirate { name = "John the Pirate"
-                   , ship = Ship { money   = 2000
-                                 , cannons = 1
-                                 , men     = 10
-                                 , cargo   = [(2, coffee)] }
-                   , interests = [coffee] }
+  val john = Pirate { name = "John the Pirate"
+                    , ship = Ship { money   = 2000
+                                  , cannons = 1
+                                  , men     = 10
+                                  , cargo   = [(2, coffee)] }
+                    , interests = [coffee] }
+
+  fun initialGame () = GameState { player  = (me, (100,100))
+                                 , pirates = [(john, (400,400))] }
 
 end
 
@@ -46,17 +54,14 @@ end
 (****************************************************************************)
 (****************************************************************************)
 (****************************************************************************)
-val _ = load "MosGame" (* Until we use Moscow ML structure-mode *)
-
+structure M = MosGame
+structure E = M.Event
+structure D = M.Draw
+structure I = M.Image
+(*structure C = M.Colors*)
 
 structure Graphics =
 struct
-
-  structure M = MosGame
-  structure E = M.Event
-  structure D = M.Draw
-  structure I = M.Image
-(*structure C = M.Colors*)
 
   val displayWidth = 960
   val displayHeight = 480
@@ -69,8 +74,25 @@ struct
       app (fn f => ignore $ f ()) fs
       before M.Display.flip disp
 
-  fun drawShip 
 
+  (* Ahh, the sea... *)
+  val sea_gfx = D.FilledRectangle ((0,0), (displayWidth-1, displayHeight-1))
+  fun drawSea gameState () = D.draw_rectangle disp sea_gfx M.Blue
+
+  (* Ohh, a ship!!! *)
+  val ship_gfx = M.Image.load "myship.png"
+  fun drawPlayer (Model.GameState gameState) () =
+      let val shipPos = #2 (#player gameState)
+      in M.Surface.blit ship_gfx M.Surface.Full disp shipPos end
+
+(* fun draw () = ( *)
+(*   M.Surface.blit spaceBg M.Surface.Full disp (0,0); *)
+(*   map (fn (bx, by, dx, dy) => *)
+(*         M.Surface.blit bulletSprite M.Surface.Full *)
+(*                        disp (floor(bx)-8, floor(by)-8)) (!bullets); *)
+(*   M.Surface.blit spaceShipSprite (spaceShipRot (!shipRot)) disp (!shipPos); *)
+(*   M.Display.flip disp *)
+(* ) *)
 
 end
 
@@ -83,36 +105,29 @@ struct
       let val gameState = Model.initialGame ()
       in loop gameState end
 
-  (* The game loop *)
-  and loop gameState =
-      (Graphics.draw [ Graphics.drawPlayer gameState
-                     , 
-                     , drawPlayer (getPlayerPos gameState)];
-       loop (process gameState gameMap) gameMap)
-
   (* Game loop *)
-  fun process gameState gameMap =
+  and loop gameState =
+      (Graphics.draw [ Graphics.drawSea    gameState
+                     , Graphics.drawPlayer gameState ];
+       loop (process gameState))
+
+  (* Event handling *)
+  and process gameState =
       case E.poll () of
           NONE => gameState
-        | SOME E.QuitEvent => (quit (); gameState)
-        | SOME (E.KeyboardEvent data) => handleKey data gameState gameMap
-        | SOME _ => gameState
+        | SOME E.QuitEvent               => (quit (); gameState)
+        | SOME (E.KeyboardEvent data)    => handleKey data gameState
+        | SOME (E.MouseButtonEvent data) => handleMouse data gameState
+        | SOME _                         => gameState
 
-  and handleKey (state, symb, modifiers) gameState gameMap =
+  and handleKey (state, symb, modifiers) gameState =
       if state <> E.KeyPressed then gameState else
       case symb of
           E.KeyQ     => (quit (); gameState)
-        | E.KeyW     => move (0,~1) gameState gameMap
-        | E.KeyUp    => move (0,~1) gameState gameMap
-        | E.KeyA     => move (~1,0) gameState gameMap
-        | E.KeyLeft  => move (~1,0) gameState gameMap
-        | E.KeyS     => move (0,1) gameState gameMap
-        | E.KeyDown  => move (0,1) gameState gameMap
-        | E.KeyD     => move (1,0) gameState gameMap
-        | E.KeyRight => move (1,0) gameState gameMap
-        | E.KeySpace => let val (rx, ry) = (Random.range(0, 10) rng - 5,
-                                            Random.range(0, 10) rng - 5)
-                        in move (rx, ry) gameState gameMap end
+        | E.KeySpace => (print "Yeah.\n"; gameState)
         | _ => gameState
+
+  and handleMouse (keystate, mousebutton, (x,y)) gameState =
+      (print ("(" ^ Int.toString x ^ ", " ^ Int.toString y ^ ")\n"); gameState)
 
 end
